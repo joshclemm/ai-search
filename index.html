@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100 bg-body" data-bs-theme="light">
+
+<head>
+  <title>Answers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A better search engine that uses AI to summarize search results to get you the answer faster and more accurately with citations to explore more. See live at https://yaddleai.com/">
+  <meta name="author" content="Josh Clemm">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/highlightjs-copy/dist/highlightjs-copy.min.css" />
+  <link rel="stylesheet" href="./style.css">
+
+  <style>
+    body {
+      font-family: "Nunito Sans", sans-serif;
+      font-optical-sizing: auto;
+    }
+
+    .disable-form {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .hide {
+      display: none;
+    }
+
+    #answerContent:empty {
+      width: 95%;
+      height: 160px;
+
+      background:
+        linear-gradient(0.25turn, transparent, #fff, transparent),
+        linear-gradient(#eee, #eee),
+        linear-gradient(#eee, #eee),
+        linear-gradient(#eee, #eee),
+        linear-gradient(#eee, #eee),
+        linear-gradient(#eee, #eee);
+      background-repeat: no-repeat;
+      background-size: 500px 160px, 100% 20px, 100% 20px, 100% 20px, 100% 20px, 100% 20px;
+      background-position: -500px 0, 0px 0, 0px 30px, 0px 60px, 0px 90px, 0px 120px;
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      to {
+        background-position:
+          800px 0,
+          0px 0, 0px 30px, 0px 60px, 0px 90px, 0px 120px;
+      }
+    }
+
+    .citation {
+      display: inline-block;
+      font-size: 10px;
+      vertical-align: top;
+      border-radius: 1000px;
+      text-align: center;
+      width: 17px;
+      margin-left: 2px;
+      padding: 0px;
+    }
+
+    .source {
+      text-align: left;
+      font-size: 14px;
+      margin: 5px;
+    }
+
+    .modal-body {
+      font-size: small;
+    }
+
+    body {
+      box-shadow: inset 0 0 5rem rgba(13, 110, 253, .1);
+    }
+
+    .navbar-nav .nav-link {
+      border-bottom: .25rem solid transparent;
+    }
+
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link:focus {
+      border-bottom-color: rgba(13, 110, 253, .25);
+    }
+
+    .navbar-nav .active {
+      border-bottom-color: rgb(13, 110, 253);
+    }
+
+    .questions a {
+      --bs-btn-font-size: .85rem;
+      margin-bottom: 8px;
+    }
+
+    [data-bs-theme=dark] a.btn-light {
+      --bs-btn-color: #fff;
+      --bs-btn-bg: #6c757d;
+      --bs-btn-border-color: #6c757d;
+      --bs-btn-hover-color: #fff;
+      --bs-btn-hover-bg: #5c636a;
+      --bs-btn-hover-border-color: #565e64;
+      --bs-btn-focus-shadow-rgb: 130, 138, 145;
+      --bs-btn-active-color: #fff;
+      --bs-btn-active-bg: #565e64;
+      --bs-btn-active-border-color: #51585e;
+      --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+      --bs-btn-disabled-color: #fff;
+      --bs-btn-disabled-bg: #6c757d;
+      --bs-btn-disabled-border-color: #6c757d;
+    }
+
+    #relatedContent.questions a {
+      text-align: left;
+      width: 100%;
+    }
+
+    #additionalSection {
+      font-size: small;
+      color: gray;
+    }
+
+    #additionalSection a {
+      color: gray;
+    }
+
+    #sourcesContent a {
+      font-size: 18px;
+      text-decoration: none;
+      line-height: 24px;
+    }
+
+    #sourcesContent p {
+      font-size: smaller;
+    }
+
+    #sourcesContent img {
+      width: 14px;
+      height: 14px;
+      margin-right: 6px;
+      margin-bottom: 3px;
+    }
+
+    #sourcesContent p:not(:last-child) {
+      padding-bottom: 0.5em;
+    }
+    
+    footer {
+      font-size: small;
+    }
+  </style>
+
+</head>
+
+<body id="body" class="bg-body">
+  <div class="container mb-3 d-flex flex-column min-vh-100" style="max-width: 860px;">
+    <div id="header" class="w-100 mx-auto mb-auto px-2">
+      <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand text-primary" style="font-size: 2em; font-family: 'Bebas Neue';" href="/">Answers AI</a>
+      </nav>
+    </div>
+
+    <div id="searchBox" class="pt-3 px-2">
+      <form id="theForm" class="mt-3" action="">
+        <div class="input-group shadow-sm">
+          <input type="search" id="inlineFormInput" name="q" class="form-control form-control-lg" placeholder="What do you want to know?" aria-label="question box" aria-describedby="basic-addon2">
+          <button type="submit" id="formSubmit" class="btn btn-primary icon-link icon-link-hover"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
+            </svg></button>
+        </div>
+        <!-- <div class="mt-2 row align-items-center">
+              <a href="#" class="col-auto ms-auto text-body-tertiary" style="font-size: small;" onclick="$('#advanced').slideToggle();">
+                Advanced <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+                </svg>
+              </a>
+            </div> -->
+        <div class="mt-2 row align-items-center">
+          <div class="col-auto ms-auto">
+          <select id="selectLLM" name="model" style="border:0;color:gray;text-align:right;background-color:inherit;" class="form-select-sm">
+            <option selected value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+            <option value="gpt-4">gpt-4</option>
+            <option value="mixtral-8x7b">mixtral-8x7b</option>
+            <option value="llama2-70b">llama2-70b</option>
+          </select>
+        </div>
+
+            <!-- <div id="advanced" class="col-auto ms-auto text-body-tertiary" style="font-size: small;" >
+              <label for="selectLLM" class="form-label">Model:</label>
+              <label for="selectVerbose" class="form-label">Verbosity:</label>
+              <select id="selectVerbose" name="v" style="border:0;color:gray;text-align:right;background-color:inherit;" class="form-select-sm">
+                <option selected value="gpt-3.5-turbo">Low</option>
+                <option value="gpt-4">Med</option>
+                <option value="mixtral-8x7b">High</option>
+              </select>
+            </div> -->
+        </div>
+      </form>
+
+      <div id="suggestions" class="questions mt-5 text-center"></div>
+    </div>
+
+    <div id="results" class="w-100 mx-auto p-2 hide">
+      <h3 class="mt-2 mb-3">
+        <span id="answerTitle" style="letter-spacing: -.8px;font-weight: 600;">Answer</span>
+        <!-- <span id="answerTitle" style="font-family: 'Bebas Neue';letter-spacing: .5px;">Answer</span> -->
+      </h3>
+      <div id="answerContent"></div>
+
+      <h6 id="relatedSection" class="mb-3 mt-4 hide">
+        <svg style="margin-right:6px; margin-bottom:2px;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chat-left-quote" viewBox="0 0 16 16">
+          <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
+          <path d="M7.066 4.76A1.665 1.665 0 0 0 4 5.668a1.667 1.667 0 0 0 2.561 1.406c-.131.389-.375.804-.777 1.22a.417.417 0 1 0 .6.58c1.486-1.54 1.293-3.214.682-4.112zm4 0A1.665 1.665 0 0 0 8 5.668a1.667 1.667 0 0 0 2.561 1.406c-.131.389-.375.804-.777 1.22a.417.417 0 1 0 .6.58c1.486-1.54 1.293-3.214.682-4.112z" />
+        </svg>
+        <span>Followup Questions</span>
+      </h6>
+      <div id="relatedContent" class="questions"></div>
+
+      <h6 id="sourcesSection" class="mb-3 mt-4 hide">
+        <svg style="margin-right:6px; margin-bottom:2px;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-globe-americas" viewBox="0 0 16 16">
+          <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M2.04 4.326c.325 1.329 2.532 2.54 3.717 3.19.48.263.793.434.743.484q-.121.12-.242.234c-.416.396-.787.749-.758 1.266.035.634.618.824 1.214 1.017.577.188 1.168.38 1.286.983.082.417-.075.988-.22 1.52-.215.782-.406 1.48.22 1.48 1.5-.5 3.798-3.186 4-5 .138-1.243-2-2-3.5-2.5-.478-.16-.755.081-.99.284-.172.15-.322.279-.51.216-.445-.148-2.5-2-1.5-2.5.78-.39.952-.171 1.227.182.078.099.163.208.273.318.609.304.662-.132.723-.633.039-.322.081-.671.277-.867.434-.434 1.265-.791 2.028-1.12.712-.306 1.365-.587 1.579-.88A7 7 0 1 1 2.04 4.327Z" />
+        </svg>
+        <span>Web Sources</span>
+      </h6>
+      <div id="sourcesContent"></div>
+
+      <div id="additionalSection" class="w-100 mx-auto hide">
+        <div class="py-4">
+          <p>
+            <em>This answer uses a large language model (<span id="model"></span>) to summarize search results and can make mistakes. Consider checking important information.
+              Answer generated in <span id="duration"></span>.</em>
+          </p>
+          <p></p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-auto text-body-tertiary text-center pt-4">
+      <p>Copyright &copy; 2024 &nbsp;<a class="text-reset" target="_blank" href="https://joshclemm.com">Josh Clemm</a> &nbsp;|&nbsp; <a class="text-reset" target="_blank" href="https://clemmapps.com">Clemm Apps</a></p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@2.1.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script src="https://unpkg.com/highlightjs-copy@1.0.5/dist/highlightjs-copy.min.js"></script>
+
+  <script>
+
+    hljs.addPlugin(new CopyButtonPlugin());
+
+    function generate_suggestions(num) {
+      const options = [
+          { e: "💪", s: "What's the 7 minute workout?" },
+          { e: "🥃", s: "What's in an Old Fashioned?" },
+          { e: "🧵", s: "The history of sewing machines" },
+          { e: "💥", s: "What's the speed of sound?" },
+          { e: "🌎", s: "What causes earthquakes?" },
+          { e: "🌻", s: "How often does the corpse flower bloom?" },
+          { e: "🪸", s: "How does coral grow?" },
+          { e: "🪐", s: "What were inspirations for Star Wars?" },
+          { e: "🍗", s: "What happened with the Neanderthals?" },
+          { e: "🤷‍♂️", s: "Who is Josh Clemm?" },
+          { e: "🌯", s: "America's best burritos" },
+          { e: "🌌", s: "What makes the sky blue?" },
+          { e: "🐝", s: "How do bees build honeycombs?" },
+          { e: "🍂", s: "Why do leaves change color?" },
+          { e: "🌊", s: "What lives in deep ocean?" },
+          { e: "🦋", s: "How do caterpillars become butterflies?" },
+          { e: "🏰", s: "Why was the Great Wall built?" },
+          { e: "🫖", s: "How did afternoon tea start?" },
+          { e: "📚", s: "What was the Library of Alexandria?" },
+          { e: "🏅", s: "How did the Olympics begin?" },
+          { e: "🖨️", s: "What revolutionized with the printing press?" },
+          { e: "🐞", s: "What was the first computer bug?" },
+          { e: "💻", s: "How was the Internet created?" },
+          { e: "🥗", s: "Who invented the Caesar salad?" },
+          { e: "🚀", s: "What made Apollo 11 significant?" },
+          { e: "📱", s: "How was the first smartphone made?" },
+          { e: "🍿", s: "Why does popcorn pop?" },
+          { e: "🔥", s: "What is Turkmenistan's 'door to hell'?" },
+          { e: "🐙", s: "How do octopuses change color?" },
+          { e: "🚗", s: "How did Uber scale?" },
+          { e: "🏈", s: "Why is Draft Punk app the best for fantasy football?" },
+          { e: "🧈", s: "What does 'buttering someone up' mean?" },
+          { e: "🌳", s: "How do Sahara trees survive?" }
+        ];
+      const shuffled = [...options].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, num);
+    }
+
+    function create_suggestions(num) {
+      var html = "";
+      var suggestions = generate_suggestions(num);
+      for (let i = 0; i < num; i++) {
+        html += '<a title="' + suggestions[i].s + '" class="btn btn-light border" href="">' + suggestions[i].e + '  ' + suggestions[i].s + '</a> ';
+      }
+      return html;
+    }
+
+    function replace_citations(content, sources) {
+      jQuery.each(sources, function(i, source) {
+        var num = i + 1;
+        var regex = new RegExp("\\s?\\[+citation:" + num + "]+", "gm");
+        var source_html = '<a class="btn btn-light border citation" data-bs-toggle="modal" data-bs-target="#modal-' + num + '">' + num + '</a>';
+        content = content.replace(regex, source_html);
+      });
+      return content;
+    }
+
+    function create_citation_modals(sources) {
+      var html = "";
+      jQuery.each(sources, function(i, source) {
+        var url = new URL(source['url']);
+        var favicon = 'https://icons.duckduckgo.com/ip3/' + url.hostname + '.ico';
+
+        html += '<div class="modal fade" id="modal-' + (i + 1) + '" tabindex="-1">' +
+          '<div class="modal-dialog modal-dialog-centered">' +
+          '<div class="modal-content">' +
+          '<div class="modal-body">' + '<h6 class="pt-2">' + source['name'] + "</h6></p><p>" + source['snippet'].replace(" ...", "...") + '</p><p><img height="16px" style="margin: -2px 8px 0 0;" loading="lazy" src="' + favicon + '"/><a target="_blank" class="icon-link icon-link-hover" href="' + source['url'] + '">View on ' + new URL(source['url']).hostname + '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/></svg></a></p></div>' +
+          '</div></div></div>';
+      });
+      return html;
+    }
+
+    function create_web_search(sources) {
+      var sourcesHTML = "";
+      jQuery.each(sources, function(i, source) {
+        var url = new URL(source['url']);
+        var path = url.pathname.replaceAll("/", " > ");
+        if (path.slice(-2) == "> ") {
+          path = path.slice(0, -2);
+        }
+        var favicon = 'https://icons.duckduckgo.com/ip3/'+url.hostname+'.ico';
+        var line = '<p><span class="d-inline-block text-truncate" style="max-width: 100%; margin-bottom:-5px;"><img src="' + favicon + '"/>' + url.protocol + "//" + url.hostname + '<span style="color: var(--bs-secondary);">' + path + "</span></span><br>" +
+          '<a target="_blank" href=\"' + source['url'] + '\">' + source['name'] + '</a><br>' +
+          source['snippet'].replace(" ...", "...") + '</p>';
+
+        sourcesHTML += line;
+      });
+      return sourcesHTML;
+    }
+
+    function create_related_questions_html(related) {
+      var relatedHTML = "";
+      jQuery.each(related, function(line) {
+        var line = this.trim();
+        if (line) {
+          relatedHTML += '<a title="' + line + '" class="btn btn-light border" href="">' + line + '</a>';
+        }
+      });
+      return relatedHTML;
+    }
+
+    function process_response(chunk) {
+
+      var sources;
+      var answer;
+      var related;
+      var metadata;
+
+      var tokens = chunk.split("====");
+
+      if (tokens.length >= 3) {
+        if (tokens[1].trim() == "SOURCES") {
+          sources = JSON.parse(tokens[2]);
+        }
+      }
+      if (tokens.length >= 5) {
+        if (tokens[3].trim() == "ANSWER") {
+          answer = tokens[4].trim();
+        }
+      }
+      if (tokens.length >= 9) {
+        if (tokens[5].trim() == "RELATED") {
+          //The LLM is supposed to format these in JSON, sometimes it doesn't output perfectly formed JSON so need to catch errors and skip for now.
+          try {
+            //Sometimes, the response adds ```json and ``` around the JSON, try and get rid of it!
+            console.log(tokens[6]);
+            console.log(tokens[6].replace("```json","").replace("```",""));
+            related = JSON.parse(tokens[6].replace("```json","").replace("```","").trim());
+          } catch (e) {console.error("Couldn't correctly parse related questions from response.")}
+        }
+        if (tokens[7].trim() == "METADATA") {
+          metadata = JSON.parse(tokens[8]);
+        }
+      }
+
+      if (answer) {
+        $("#answerContent").html(marked.parse(replace_citations(answer, sources)));
+        hljs.highlightAll();
+        $("#answerSection").removeClass("hide");
+      }
+
+      if (related) {
+        $("#relatedContent").html(create_related_questions_html(related));
+        $("#relatedContent a").each(function (index) {
+          $(this).click(function (e) {
+            var str = $(this).text();
+            $("#inlineFormInput").val(str);
+            submit(str);
+            e.preventDefault();
+          });
+        });
+        $("#relatedSection").removeClass("hide");
+      }
+
+      if (metadata) {
+        // we now the answer content is done streaming and we can add the citation popups
+        $("#answerContent").append(create_citation_modals(sources));
+
+        $("#sourcesContent").html(create_web_search(sources));
+        $("#sourcesSection").removeClass("hide");
+        $("#model").html(metadata["model"]);
+        $("#duration").html(metadata["duration"]["total"]);
+        $("#additionalSection").removeClass("hide");
+      }
+    }
+
+    function submit(query) {
+      if (query.length > 0) {
+
+        $("#suggestions").addClass("hide");
+        $("#theForm").addClass("disable-form");
+        $("#header").removeClass("mb-auto");
+        $("#inlineFormInput").removeClass("form-control-lg");
+
+        //clear any previous results
+        $("#sourcesSection").addClass("hide");
+        $("#sourcesContent").html("");
+        $("#relatedSection").addClass("hide");
+        $("#relatedContent").html("");
+        $("#answerSection").removeClass("hide");
+        $("#answerContent").html("");
+        $("#answerTitle").html(query);
+        $("#additionalSection").addClass("hide");
+
+        //now, "show" results which are empty so loader will show
+        $("#results").removeClass("hide");
+
+        //setup ajax request
+        var xmlhttp = new XMLHttpRequest();
+
+        //listen for any streaming results
+        xmlhttp.onprogress = function() {
+          process_response(this.responseText);
+        };
+
+        xmlhttp.ontimeout = (e) => {
+          // XMLHttpRequest timed out. Do something here.
+          $("#answerContent").append('<div class="alert alert-warning" role="alert">Encountered a problem fetching answer. <a href="#" class="alert-link">Click here to try again</a>.</div>');
+          $("a.alert-link").click(function(e) {
+            submit($("#inlineFormInput").val())
+            e.preventDefault();
+          });
+          $("#theForm").removeClass("disable-form");
+        };
+
+        xmlhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            $("#theForm").removeClass("disable-form");
+          }
+        };
+        var model = $("#selectLLM").val();
+
+        xmlhttp.timeout = 25000; //in ms
+        xmlhttp.open("GET", "search.php?" + "q=" + query + "&model=" + model, true);
+        xmlhttp.send();
+      }
+    }
+
+    $("#suggestions").html(create_suggestions(5));
+    $("#suggestions a").each(function(index) {
+      $(this).click(function(e) {
+        var str = $(this).attr('title');
+        // console.log(str);
+        $("#inlineFormInput").val(str);
+        submit(str);
+        e.preventDefault();
+      });
+    });
+    $("#formSubmit").click(function(e) {
+      submit($("#inlineFormInput").val())
+      e.preventDefault();
+    });
+  </script>
+</body>
+
+</html>
